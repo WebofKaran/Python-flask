@@ -11,7 +11,7 @@ CORS(app)
 
 app.config["SQLALCHEMY_DATABASE_URI"] = os.getenv(
     "DATABASE_URL",
-    "postgresql://postgres:password@127.0.0.1:5432/flask_lab",
+    "postgresql+psycopg://postgres:password@127.0.0.1:5432/flask_lab",
 )
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
@@ -22,7 +22,11 @@ class Task(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(160), nullable=False)
     completed = db.Column(db.Boolean, nullable=False, default=False)
-    created_at = db.Column(db.DateTime(timezone=True), nullable=False, default=lambda: datetime.now(timezone.utc))
+    created_at = db.Column(
+        db.DateTime(timezone=True),
+        nullable=False,
+        default=lambda: datetime.now(timezone.utc),
+    )
 
     def to_dict(self):
         return {
@@ -42,12 +46,14 @@ def health():
         db.session.rollback()
         database = f"PostgreSQL unavailable: {exc.__class__.__name__}"
 
-    return jsonify({
-        "status": "healthy",
-        "stack": "Flask + React + PostgreSQL",
-        "database": database,
-        "timestamp": datetime.now(timezone.utc).isoformat(),
-    })
+    return jsonify(
+        {
+            "status": "healthy",
+            "stack": "Flask + React + PostgreSQL",
+            "database": database,
+            "timestamp": datetime.now(timezone.utc).isoformat(),
+        }
+    )
 
 
 @app.get("/api/tasks")
